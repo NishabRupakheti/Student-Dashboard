@@ -10,6 +10,10 @@ services:
       - ./backend/.env
     depends_on:
       - db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`backend.local`)"
+      - "traefik.http.services.backend.loadbalancer.server.port=4000"
 
   db:
     image: postgres:17
@@ -21,6 +25,18 @@ services:
       - db_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+
+  traefik:
+    image: traefik:v3.3
+    command:
+      - "--api.insecure=true" 
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:  
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
 
 volumes:
   db_data:
