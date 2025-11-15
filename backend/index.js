@@ -6,7 +6,7 @@ import express from 'express';
 import ApolloServerInstance from './graphql/server.js';
 
 const app = express();
-const PORT = process.env.PORT || 2000;
+const PORT = process.env.PORT || 4000;
 
 async function startServer() {
   await ApolloServerInstance.start();
