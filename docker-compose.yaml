@@ -2,18 +2,21 @@
 services: 
   backend:
     build: ./backend
-    ports:
-      - "4000:4000"
     volumes:
       - ./backend:/app
     env_file:
       - ./backend/.env
+    ports:
+      - "4000:4000"
     depends_on:
       - db
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(`backend.local`)"
       - "traefik.http.services.backend.loadbalancer.server.port=4000"
+      - "traefik.http.services.backend.loadbalancer.healthcheck.path=/graphql"
+    deploy:
+      replicas: 1
 
   db:
     image: postgres:17
