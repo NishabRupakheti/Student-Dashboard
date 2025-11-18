@@ -20,10 +20,8 @@ services:
 
   db:
     image: postgres:17
-    environment:
-      POSTGRES_USER: General
-      POSTGRES_PASSWORD: root666
-      POSTGRES_DB: CoreDB
+    env_file:
+      - ./backend/.env
     volumes:
       - db_data:/var/lib/postgresql/data
     ports:
