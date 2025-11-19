@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+
+// configs the prisma client generator
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+
+// database connetion handle 
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id  Int @id @default(autoincrement())
+  email String @unique 
+  password String 
+  optionalfield String?  
+  courses Course[]
+  task Task[]
+  createdAt DateTime @default(now())
+}
+
+model Course {
+  id Int @id @default(autoincrement())
+  name String 
+  description String?
+  userId Int
+  user User  @relation(fields: [userId], references: [id])
+  task Task[] 
+  createdAt  DateTime @default(now())
+}
+
+model Task {
+  id  Int      @id @default(autoincrement())
+  title  String
+  deadline  DateTime
+  completed Boolean  @default(false)
+  courseId  Int
+  userId  Int
+  course  Course   @relation(fields: [courseId], references: [id])
+  user  User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
