@@ -10,15 +10,5 @@ const sql = postgres({
   password: process.env.DB_PASSWORD,
 });
 
-async function testConnection() {
-  try {
-    await sql`SELECT 1+1 AS result`;
-    console.log("Database connection successful");
-  } catch (error) {
-    console.error("Database connection failed:", error);
-  }
-}
-
-testConnection();
 
 export default sql;
