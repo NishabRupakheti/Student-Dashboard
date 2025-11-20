@@ -18,33 +18,34 @@ datasource db {
 }
 
 model User {
-  id  Int @id @default(autoincrement())
-  email String @unique 
-  password String 
-  optionalfield String?  
-  courses Course[]
-  task Task[]
+  id        Int      @id @default(autoincrement())
+  firstName String
+  lastName  String 
+  email     String   @unique 
+  password  String 
+  courses   Course[]
+  tasks     Task[]
   createdAt DateTime @default(now())
 }
 
 model Course {
-  id Int @id @default(autoincrement())
-  name String 
+  id          Int      @id @default(autoincrement())
+  name        String 
   description String?
-  userId Int
-  user User  @relation(fields: [userId], references: [id])
-  task Task[] 
-  createdAt  DateTime @default(now())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks       Task[] 
+  createdAt   DateTime @default(now())
 }
 
 model Task {
-  id  Int      @id @default(autoincrement())
-  title  String
+  id        Int      @id @default(autoincrement())
+  title     String
   deadline  DateTime
   completed Boolean  @default(false)
   courseId  Int
-  userId  Int
-  course  Course   @relation(fields: [courseId], references: [id])
-  user  User     @relation(fields: [userId], references: [id])
+  userId    Int
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 }
