@@ -9,33 +9,35 @@ export const resolvers = {
 
   Mutation: {
     // Create a new user
-    createUser: async (_, { email, password, optionalfield }) => {
+    createUser: async (_, { firstName, lastName, email, password }) => {
       return await prisma.user.create({
         data: {
+          firstName,
+          lastName,
           email,
           password,
-          optionalfield,
         },
         include: {
           courses: true,
-          task: true,
+          tasks: true,
         },
       });
     },
 
     // Update an existing user
-    updateUser: async (_, { id, email, password, optionalfield }) => {
+    updateUser: async (_, { id, firstName, lastName, email, password }) => {
       const data = {};
+      if (firstName !== undefined) data.firstName = firstName;
+      if (lastName !== undefined) data.lastName = lastName;
       if (email !== undefined) data.email = email;
       if (password !== undefined) data.password = password;
-      if (optionalfield !== undefined) data.optionalfield = optionalfield;
 
       return await prisma.user.update({
         where: { id },
         data,
         include: {
           courses: true,
-          task: true,
+          tasks: true,
         },
       });
     },
@@ -46,7 +48,7 @@ export const resolvers = {
         where: { id },
         include: {
           courses: true,
-          task: true,
+          tasks: true,
         },
       });
     },

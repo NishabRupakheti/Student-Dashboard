@@ -9,7 +9,7 @@ export const resolvers = {
       return await prisma.course.findMany({
         include: {
           user: true,
-          task: true,
+          tasks: true,
         },
       });
     },
@@ -20,7 +20,7 @@ export const resolvers = {
         where: { id },
         include: {
           user: true,
-          task: true,
+          tasks: true,
         },
       });
     },
@@ -31,7 +31,7 @@ export const resolvers = {
         where: { userId },
         include: {
           user: true,
-          task: true,
+          tasks: true,
         },
       });
     },
@@ -48,7 +48,7 @@ export const resolvers = {
         },
         include: {
           user: true,
-          task: true,
+          tasks: true,
         },
       });
     },
@@ -64,7 +64,7 @@ export const resolvers = {
         data,
         include: {
           user: true,
-          task: true,
+          tasks: true,
         },
       });
     },
@@ -75,7 +75,7 @@ export const resolvers = {
         where: { id },
         include: {
           user: true,
-          task: true,
+          tasks: true,
         },
       });
     },
