@@ -2,7 +2,7 @@
 
 import prisma from "../../lib/prisma.js";
 
-export const resolvers = {
+export const CourseResolvers = {
   Query: {
     // Get all courses
     courses: async () => {

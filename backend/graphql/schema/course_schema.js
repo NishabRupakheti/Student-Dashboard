@@ -2,7 +2,7 @@
 
 import { gql } from "apollo-server-express";
 
-export const typeDefs = gql`
+export const CourseTypeDefs = gql`
   type Course {
     id: Int!
     name: String!

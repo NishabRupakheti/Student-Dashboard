@@ -2,7 +2,7 @@
 
 import prisma from "../../lib/prisma.js";
 
-export const resolvers = {
+export const TaskResolvers = {
   Query: {
     // Get all tasks
     tasks: async () => {
