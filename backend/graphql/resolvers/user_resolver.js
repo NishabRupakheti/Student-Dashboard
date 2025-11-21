@@ -1,6 +1,8 @@
 // User resolver functions for handling GraphQL requests
 
 import prisma from "../../lib/prisma.js";
+import bcrypt from "bcryptjs";
+
 
 export const UserResolvers = {
   Query: {
@@ -10,12 +12,14 @@ export const UserResolvers = {
   Mutation: {
     // Create a new user
     createUser: async (_, { firstName, lastName, email, password }) => {
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
       return await prisma.user.create({
         data: {
           firstName,
           lastName,
           email,
-          password,
+          password: hashedPassword,
         },
         include: {
           courses: true,
