@@ -10,6 +10,7 @@ services:
       - "4000:4000"
     depends_on:
       - db
+      - test-db
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(`backend.local`)"
@@ -26,6 +27,15 @@ services:
       - db_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+
+  test-db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: TestDB
+    tmpfs:
+      - /var/lib/postgresql/data
 
   traefik:
     image: traefik:v3.3

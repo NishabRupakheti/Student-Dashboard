@@ -9,7 +9,10 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:db:setup": "NODE_ENV=test DATABASE_URL=$TEST_DATABASE_URL npx prisma migrate deploy",
+    "test:db:reset": "NODE_ENV=test DATABASE_URL=$TEST_DATABASE_URL npx prisma migrate reset --force"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
@@ -25,6 +28,7 @@
     "postgres": "^3.4.7"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "nodemon": "^3.1.11",
     "prisma": "^6.19.0"
   }
