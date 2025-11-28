@@ -5,12 +5,14 @@ import { CourseResolvers } from "./course_resolver.js";
 import { TaskResolvers } from "./task_resolver.js";
 import { mergeResolvers } from "@graphql-tools/merge";
 import { AuthResolvers } from "./auth_resolver.js";
+import { RedisResolvers } from "./redis_resolver.js";
 
 const resolvers = mergeResolvers([
   UserResolvers,
   CourseResolvers,
   TaskResolvers,
   AuthResolvers,
+  RedisResolvers,
 ]);
 
 export default resolvers;
