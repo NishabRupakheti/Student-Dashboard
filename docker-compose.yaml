@@ -49,5 +49,14 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+
 volumes:
   db_data:
+  redis_data:
