@@ -11,5 +11,10 @@ export const AuthTypeDefs = gql`
       lastName: String!
     ): String!
     login(email: String!, password: String!): String!
+    logout: String!
+  }
+
+  type Query {
+    me: User
   }
 `;

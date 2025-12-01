@@ -4,8 +4,18 @@ import bcrypt from "bcryptjs";
 
 export const AuthResolvers = {
   Query: {
-    // Placeholder for future auth-related queries
-    _empty: () => null,
+    // Get current logged-in user from session
+    me: async (_, __, { req }) => {
+      if (!req.session.userId) {
+        return null;
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: req.session.userId },
+      });
+
+      return user;
+    },
   },
 
   Mutation: {
@@ -54,9 +64,61 @@ export const AuthResolvers = {
         throw new Error(error.message || "Registration failed");
       }
     },
-    // Placeholder for future auth-related mutations
-    login: async () => {
-      return "User logged in successfully";
+
+    login: async (_, args, { req }) => {
+      try {
+
+        const { email, password } = args;
+
+        // Validate inputs
+        if (!email || !password) {
+          throw new Error("Email and password are required");
+        }
+
+        // Find user by email
+        const user = await prisma.user.findUnique({
+          where: { email },
+        });
+
+        if (!user) {
+          throw new Error("Invalid email or password");
+        }
+
+        // Compare password with stored hash
+        const isValidPassword = await bcrypt.compare(password, user.password);
+
+        if (!isValidPassword) {
+          throw new Error("Invalid email or password");
+        }
+
+        // Create session - store userId in session
+        req.session.userId = user.id;
+        req.session.createdAt = new Date().toISOString();
+
+        // Explicitly save session to Redis and wait for completion
+        return new Promise((resolve, reject) => {
+          req.session.save((err) => {
+            if (err) {
+              console.error("Session save error:", err);
+              reject(new Error("Failed to create session: " + err.message));
+            }
+            resolve("Login successful");
+          });
+        });
+      } catch (error) {
+        throw new Error(error.message || "Login failed");
+      }
+    },
+
+    logout: async (_, __, { req }) => {
+      return new Promise((resolve, reject) => {
+        req.session.destroy((err) => {
+          if (err) {
+            reject(new Error("Failed to logout"));
+          }
+          resolve("Logout successful");
+        });
+      });
     },
   },
 };

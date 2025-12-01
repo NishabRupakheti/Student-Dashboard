@@ -5,7 +5,6 @@ dotenv.config();
 import express from "express";
 import ApolloServerInstance from "./graphql/server.js";
 import redisClient from "./redis/redisConnection.js"; 
-import { RedisStore } from "connect-redis"; // saves express session data to Redis
 import { redisSession } from "./redis/redisConnection.js";
 
 

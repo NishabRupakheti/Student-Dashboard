@@ -1,14 +1,20 @@
-import Redis from "ioredis"; // a Redis client for Node.js that connects node to Redis server
+import { createClient } from "redis"; // Standard Redis client
 import session from "express-session"; // handles session logic in express (create, save and read cookies)
 import { RedisStore } from "connect-redis";
 import dotenv from "dotenv";
 dotenv.config();
 
-// create a redis connection
-const redisClient = new Redis({
-  host: "redis",
-  port: 6379,
+// create a redis connection using standard redis client
+const redisClient = createClient({
+  url: "redis://redis:6379",
 });
+
+// Handle Redis connection errors
+redisClient.on("error", (err) => console.error("Redis Client Error:", err));
+redisClient.on("connect", () => console.log("Redis connected"));
+
+// Connect to Redis (required for redis v4+)
+await redisClient.connect();
 
 export const redisSession = session({
   store: new RedisStore({ client: redisClient }),
