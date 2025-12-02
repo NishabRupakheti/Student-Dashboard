@@ -47,12 +47,11 @@ export const TaskTypeDefs = gql`
   }
 
   type Mutation {
-    # Create a new task
+    # Create a new task (uses logged-in user's ID)
     createTask(
       title: String!
       deadline: String!
       courseId: Int!
-      userId: Int!
       completed: Boolean
     ): Task!
     

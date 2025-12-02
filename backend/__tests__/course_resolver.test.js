@@ -3,8 +3,16 @@ import { CourseResolvers } from '../graphql/resolvers/course_resolver.js';
 
 const prisma = getTestPrismaClient();
 
+// Helper to create mock request with session
+const createMockReq = (userId = null) => ({
+  session: {
+    userId,
+  },
+});
+
 describe('Course Resolver Tests', () => {
   let testUser;
+  let mockReq;
 
   // Create a test user before each test suite
   beforeEach(async () => {
@@ -16,6 +24,8 @@ describe('Course Resolver Tests', () => {
         password: 'password123',
       },
     });
+    // Create authenticated mock request
+    mockReq = createMockReq(testUser.id);
   });
 
   describe('Query: courses', () => {
@@ -28,7 +38,7 @@ describe('Course Resolver Tests', () => {
         data: { name: 'Science 101', description: 'Basic Science', userId: testUser.id },
       });
 
-      const result = await CourseResolvers.Query.courses();
+      const result = await CourseResolvers.Query.courses(null, null, { req: mockReq });
 
       expect(result.length).toBe(2);
       expect(result[0].name).toBe('Math 101');
@@ -38,7 +48,7 @@ describe('Course Resolver Tests', () => {
     });
 
     test('should return empty array when no courses exist', async () => {
-      const result = await CourseResolvers.Query.courses();
+      const result = await CourseResolvers.Query.courses(null, null, { req: mockReq });
       expect(result).toEqual([]);
     });
 
@@ -56,10 +66,17 @@ describe('Course Resolver Tests', () => {
         },
       });
 
-      const result = await CourseResolvers.Query.courses();
+      const result = await CourseResolvers.Query.courses(null, null, { req: mockReq });
 
       expect(result[0].user.id).toBe(testUser.id);
       expect(result[0].tasks.length).toBe(1);
+    });
+
+    test('should throw error when not authenticated', async () => {
+      const unauthReq = createMockReq(null);
+      await expect(
+        CourseResolvers.Query.courses(null, null, { req: unauthReq })
+      ).rejects.toThrow('Not authenticated');
     });
   });
 
@@ -69,7 +86,7 @@ describe('Course Resolver Tests', () => {
         data: { name: 'Math 101', description: 'Algebra', userId: testUser.id },
       });
 
-      const result = await CourseResolvers.Query.course(null, { id: course.id });
+      const result = await CourseResolvers.Query.course(null, { id: course.id }, { req: mockReq });
 
       expect(result).toBeDefined();
       expect(result.id).toBe(course.id);
@@ -80,7 +97,7 @@ describe('Course Resolver Tests', () => {
     });
 
     test('should return null for non-existent course', async () => {
-      const result = await CourseResolvers.Query.course(null, { id: 99999 });
+      const result = await CourseResolvers.Query.course(null, { id: 99999 }, { req: mockReq });
       expect(result).toBeNull();
     });
 
@@ -98,11 +115,18 @@ describe('Course Resolver Tests', () => {
         },
       });
 
-      const result = await CourseResolvers.Query.course(null, { id: course.id });
+      const result = await CourseResolvers.Query.course(null, { id: course.id }, { req: mockReq });
 
       expect(result.user.id).toBe(testUser.id);
       expect(result.tasks.length).toBe(1);
       expect(result.tasks[0].title).toBe('Task 1');
+    });
+
+    test('should throw error when not authenticated', async () => {
+      const unauthReq = createMockReq(null);
+      await expect(
+        CourseResolvers.Query.course(null, { id: 1 }, { req: unauthReq })
+      ).rejects.toThrow('Not authenticated');
     });
   });
 
@@ -131,7 +155,7 @@ describe('Course Resolver Tests', () => {
 
       const result = await CourseResolvers.Query.coursesByUser(null, {
         userId: testUser.id,
-      });
+      }, { req: mockReq });
 
       expect(result.length).toBe(2);
       expect(result[0].name).toBe('Math 101');
@@ -151,7 +175,7 @@ describe('Course Resolver Tests', () => {
 
       const result = await CourseResolvers.Query.coursesByUser(null, {
         userId: anotherUser.id,
-      });
+      }, { req: mockReq });
 
       expect(result).toEqual([]);
     });
@@ -159,19 +183,25 @@ describe('Course Resolver Tests', () => {
     test('should return empty array for non-existent user', async () => {
       const result = await CourseResolvers.Query.coursesByUser(null, {
         userId: 99999,
-      });
+      }, { req: mockReq });
 
       expect(result).toEqual([]);
+    });
+
+    test('should throw error when not authenticated', async () => {
+      const unauthReq = createMockReq(null);
+      await expect(
+        CourseResolvers.Query.coursesByUser(null, { userId: testUser.id }, { req: unauthReq })
+      ).rejects.toThrow('Not authenticated');
     });
   });
 
   describe('Mutation: createCourse', () => {
-    test('should create a new course', async () => {
+    test('should create a new course for authenticated user', async () => {
       const result = await CourseResolvers.Mutation.createCourse(null, {
         name: 'Math 101',
         description: 'Introduction to Algebra',
-        userId: testUser.id,
-      });
+      }, { req: mockReq });
 
       expect(result).toBeDefined();
       expect(result.id).toBeDefined();
@@ -187,8 +217,7 @@ describe('Course Resolver Tests', () => {
       const result = await CourseResolvers.Mutation.createCourse(null, {
         name: 'Math 101',
         description: null,
-        userId: testUser.id,
-      });
+      }, { req: mockReq });
 
       expect(result.name).toBe('Math 101');
       expect(result.description).toBeNull();
@@ -197,26 +226,25 @@ describe('Course Resolver Tests', () => {
     test('should create course without description', async () => {
       const result = await CourseResolvers.Mutation.createCourse(null, {
         name: 'Math 101',
-        userId: testUser.id,
-      });
+      }, { req: mockReq });
 
       expect(result.name).toBe('Math 101');
       expect(result.description).toBeNull();
     });
 
-    test('should fail when creating course with non-existent user', async () => {
+    test('should throw error when not authenticated', async () => {
+      const unauthReq = createMockReq(null);
       await expect(
         CourseResolvers.Mutation.createCourse(null, {
           name: 'Math 101',
           description: 'Algebra',
-          userId: 99999,
-        })
-      ).rejects.toThrow();
+        }, { req: unauthReq })
+      ).rejects.toThrow('Not authenticated');
     });
   });
 
   describe('Mutation: updateCourse', () => {
-    test('should update course name', async () => {
+    test('should update course name when owner', async () => {
       const course = await prisma.course.create({
         data: { name: 'Math 101', description: 'Algebra', userId: testUser.id },
       });
@@ -224,7 +252,7 @@ describe('Course Resolver Tests', () => {
       const result = await CourseResolvers.Mutation.updateCourse(null, {
         id: course.id,
         name: 'Math 102',
-      });
+      }, { req: mockReq });
 
       expect(result.id).toBe(course.id);
       expect(result.name).toBe('Math 102');
@@ -239,7 +267,7 @@ describe('Course Resolver Tests', () => {
       const result = await CourseResolvers.Mutation.updateCourse(null, {
         id: course.id,
         description: 'Advanced Algebra',
-      });
+      }, { req: mockReq });
 
       expect(result.id).toBe(course.id);
       expect(result.name).toBe('Math 101'); // Unchanged
@@ -255,7 +283,7 @@ describe('Course Resolver Tests', () => {
         id: course.id,
         name: 'Math 102',
         description: 'Geometry',
-      });
+      }, { req: mockReq });
 
       expect(result.name).toBe('Math 102');
       expect(result.description).toBe('Geometry');
@@ -269,7 +297,7 @@ describe('Course Resolver Tests', () => {
       const result = await CourseResolvers.Mutation.updateCourse(null, {
         id: course.id,
         name: 'Math 102',
-      });
+      }, { req: mockReq });
 
       expect(result.name).toBe('Math 102');
       expect(result.description).toBe('Algebra'); // Unchanged
@@ -281,20 +309,56 @@ describe('Course Resolver Tests', () => {
         CourseResolvers.Mutation.updateCourse(null, {
           id: 99999,
           name: 'Updated Course',
-        })
-      ).rejects.toThrow();
+        }, { req: mockReq })
+      ).rejects.toThrow('Course not found');
+    });
+
+    test('should throw error when not authenticated', async () => {
+      const course = await prisma.course.create({
+        data: { name: 'Math 101', description: 'Algebra', userId: testUser.id },
+      });
+
+      const unauthReq = createMockReq(null);
+      await expect(
+        CourseResolvers.Mutation.updateCourse(null, {
+          id: course.id,
+          name: 'Updated Course',
+        }, { req: unauthReq })
+      ).rejects.toThrow('Not authenticated');
+    });
+
+    test('should throw error when user does not own the course', async () => {
+      const anotherUser = await prisma.user.create({
+        data: {
+          firstName: 'Jane',
+          lastName: 'Smith',
+          email: 'jane@example.com',
+          password: 'password456',
+        },
+      });
+
+      const course = await prisma.course.create({
+        data: { name: 'Math 101', description: 'Algebra', userId: anotherUser.id },
+      });
+
+      await expect(
+        CourseResolvers.Mutation.updateCourse(null, {
+          id: course.id,
+          name: 'Updated Course',
+        }, { req: mockReq })
+      ).rejects.toThrow('Not authorized');
     });
   });
 
   describe('Mutation: deleteCourse', () => {
-    test('should delete an existing course', async () => {
+    test('should delete an existing course when owner', async () => {
       const course = await prisma.course.create({
         data: { name: 'Math 101', userId: testUser.id },
       });
 
       const result = await CourseResolvers.Mutation.deleteCourse(null, {
         id: course.id,
-      });
+      }, { req: mockReq });
 
       expect(result.id).toBe(course.id);
       expect(result.name).toBe('Math 101');
@@ -306,8 +370,8 @@ describe('Course Resolver Tests', () => {
 
     test('should fail when deleting non-existent course', async () => {
       await expect(
-        CourseResolvers.Mutation.deleteCourse(null, { id: 99999 })
-      ).rejects.toThrow();
+        CourseResolvers.Mutation.deleteCourse(null, { id: 99999 }, { req: mockReq })
+      ).rejects.toThrow('Course not found');
     });
 
     test('should cascade delete course tasks', async () => {
@@ -334,11 +398,41 @@ describe('Course Resolver Tests', () => {
       });
 
       // Delete course
-      await CourseResolvers.Mutation.deleteCourse(null, { id: course.id });
+      await CourseResolvers.Mutation.deleteCourse(null, { id: course.id }, { req: mockReq });
 
       // Verify tasks are also deleted
       const tasks = await prisma.task.findMany({ where: { courseId: course.id } });
       expect(tasks.length).toBe(0);
+    });
+
+    test('should throw error when not authenticated', async () => {
+      const course = await prisma.course.create({
+        data: { name: 'Math 101', userId: testUser.id },
+      });
+
+      const unauthReq = createMockReq(null);
+      await expect(
+        CourseResolvers.Mutation.deleteCourse(null, { id: course.id }, { req: unauthReq })
+      ).rejects.toThrow('Not authenticated');
+    });
+
+    test('should throw error when user does not own the course', async () => {
+      const anotherUser = await prisma.user.create({
+        data: {
+          firstName: 'Jane',
+          lastName: 'Smith',
+          email: 'jane@example.com',
+          password: 'password456',
+        },
+      });
+
+      const course = await prisma.course.create({
+        data: { name: 'Math 101', userId: anotherUser.id },
+      });
+
+      await expect(
+        CourseResolvers.Mutation.deleteCourse(null, { id: course.id }, { req: mockReq })
+      ).rejects.toThrow('Not authorized');
     });
   });
 

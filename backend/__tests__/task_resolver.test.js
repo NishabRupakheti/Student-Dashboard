@@ -3,9 +3,17 @@ import { TaskResolvers } from '../graphql/resolvers/task_resolver.js';
 
 const prisma = getTestPrismaClient();
 
+// Helper to create mock request with session
+const createMockReq = (userId = null) => ({
+  session: {
+    userId,
+  },
+});
+
 describe('Task Resolver Tests', () => {
   let testUser;
   let testCourse;
+  let mockReq;
 
   // Create test user and course before each test
   beforeEach(async () => {
@@ -25,6 +33,9 @@ describe('Task Resolver Tests', () => {
         userId: testUser.id,
       },
     });
+
+    // Create authenticated mock request
+    mockReq = createMockReq(testUser.id);
   });
 
   describe('Query: tasks', () => {
@@ -46,7 +57,7 @@ describe('Task Resolver Tests', () => {
         },
       });
 
-      const result = await TaskResolvers.Query.tasks();
+      const result = await TaskResolvers.Query.tasks(null, null, { req: mockReq });
 
       expect(result.length).toBe(2);
       expect(result[0].title).toBe('Assignment 1');
@@ -56,7 +67,7 @@ describe('Task Resolver Tests', () => {
     });
 
     test('should return empty array when no tasks exist', async () => {
-      const result = await TaskResolvers.Query.tasks();
+      const result = await TaskResolvers.Query.tasks(null, null, { req: mockReq });
       expect(result).toEqual([]);
     });
 
@@ -70,12 +81,19 @@ describe('Task Resolver Tests', () => {
         },
       });
 
-      const result = await TaskResolvers.Query.tasks();
+      const result = await TaskResolvers.Query.tasks(null, null, { req: mockReq });
 
       expect(result[0].course.id).toBe(testCourse.id);
       expect(result[0].course.name).toBe('Computer Science 101');
       expect(result[0].user.id).toBe(testUser.id);
       expect(result[0].user.email).toBe('jane@example.com');
+    });
+
+    test('should throw error when not authenticated', async () => {
+      const unauthReq = createMockReq(null);
+      await expect(
+        TaskResolvers.Query.tasks(null, null, { req: unauthReq })
+      ).rejects.toThrow('Not authenticated');
     });
   });
 
@@ -91,7 +109,7 @@ describe('Task Resolver Tests', () => {
         },
       });
 
-      const result = await TaskResolvers.Query.task(null, { id: task.id });
+      const result = await TaskResolvers.Query.task(null, { id: task.id }, { req: mockReq });
 
       expect(result).toBeDefined();
       expect(result.id).toBe(task.id);
@@ -102,7 +120,7 @@ describe('Task Resolver Tests', () => {
     });
 
     test('should return null for non-existent task', async () => {
-      const result = await TaskResolvers.Query.task(null, { id: 99999 });
+      const result = await TaskResolvers.Query.task(null, { id: 99999 }, { req: mockReq });
       expect(result).toBeNull();
     });
 
@@ -116,10 +134,17 @@ describe('Task Resolver Tests', () => {
         },
       });
 
-      const result = await TaskResolvers.Query.task(null, { id: task.id });
+      const result = await TaskResolvers.Query.task(null, { id: task.id }, { req: mockReq });
 
       expect(result.course.id).toBe(testCourse.id);
       expect(result.user.id).toBe(testUser.id);
+    });
+
+    test('should throw error when not authenticated', async () => {
+      const unauthReq = createMockReq(null);
+      await expect(
+        TaskResolvers.Query.task(null, { id: 1 }, { req: unauthReq })
+      ).rejects.toThrow('Not authenticated');
     });
   });
 
@@ -159,7 +184,7 @@ describe('Task Resolver Tests', () => {
 
       const result = await TaskResolvers.Query.tasksByCourse(null, {
         courseId: testCourse.id,
-      });
+      }, { req: mockReq });
 
       expect(result.length).toBe(2);
       expect(result[0].title).toBe('CS Task 1');
@@ -170,7 +195,7 @@ describe('Task Resolver Tests', () => {
     test('should return empty array when course has no tasks', async () => {
       const result = await TaskResolvers.Query.tasksByCourse(null, {
         courseId: testCourse.id,
-      });
+      }, { req: mockReq });
       expect(result).toEqual([]);
     });
 
@@ -186,10 +211,17 @@ describe('Task Resolver Tests', () => {
 
       const result = await TaskResolvers.Query.tasksByCourse(null, {
         courseId: testCourse.id,
-      });
+      }, { req: mockReq });
 
       expect(result[0].course).toBeDefined();
       expect(result[0].user).toBeDefined();
+    });
+
+    test('should throw error when not authenticated', async () => {
+      const unauthReq = createMockReq(null);
+      await expect(
+        TaskResolvers.Query.tasksByCourse(null, { courseId: testCourse.id }, { req: unauthReq })
+      ).rejects.toThrow('Not authenticated');
     });
   });
 
@@ -231,7 +263,7 @@ describe('Task Resolver Tests', () => {
 
       const result = await TaskResolvers.Query.tasksByUser(null, {
         userId: testUser.id,
-      });
+      }, { req: mockReq });
 
       expect(result.length).toBe(2);
       expect(result[0].title).toBe('Jane Task 1');
@@ -242,7 +274,7 @@ describe('Task Resolver Tests', () => {
     test('should return empty array when user has no tasks', async () => {
       const result = await TaskResolvers.Query.tasksByUser(null, {
         userId: testUser.id,
-      });
+      }, { req: mockReq });
       expect(result).toEqual([]);
     });
 
@@ -258,10 +290,17 @@ describe('Task Resolver Tests', () => {
 
       const result = await TaskResolvers.Query.tasksByUser(null, {
         userId: testUser.id,
-      });
+      }, { req: mockReq });
 
       expect(result[0].course).toBeDefined();
       expect(result[0].user).toBeDefined();
+    });
+
+    test('should throw error when not authenticated', async () => {
+      const unauthReq = createMockReq(null);
+      await expect(
+        TaskResolvers.Query.tasksByUser(null, { userId: testUser.id }, { req: unauthReq })
+      ).rejects.toThrow('Not authenticated');
     });
   });
 
@@ -297,7 +336,7 @@ describe('Task Resolver Tests', () => {
 
       const result = await TaskResolvers.Query.completedTasks(null, {
         userId: testUser.id,
-      });
+      }, { req: mockReq });
 
       expect(result.length).toBe(2);
       expect(result[0].title).toBe('Completed Task 1');
@@ -319,7 +358,7 @@ describe('Task Resolver Tests', () => {
 
       const result = await TaskResolvers.Query.completedTasks(null, {
         userId: testUser.id,
-      });
+      }, { req: mockReq });
       expect(result).toEqual([]);
     });
 
@@ -336,10 +375,17 @@ describe('Task Resolver Tests', () => {
 
       const result = await TaskResolvers.Query.completedTasks(null, {
         userId: testUser.id,
-      });
+      }, { req: mockReq });
 
       expect(result[0].course).toBeDefined();
       expect(result[0].user).toBeDefined();
+    });
+
+    test('should throw error when not authenticated', async () => {
+      const unauthReq = createMockReq(null);
+      await expect(
+        TaskResolvers.Query.completedTasks(null, { userId: testUser.id }, { req: unauthReq })
+      ).rejects.toThrow('Not authenticated');
     });
   });
 
@@ -375,7 +421,7 @@ describe('Task Resolver Tests', () => {
 
       const result = await TaskResolvers.Query.pendingTasks(null, {
         userId: testUser.id,
-      });
+      }, { req: mockReq });
 
       expect(result.length).toBe(2);
       expect(result[0].title).toBe('Pending Task 1');
@@ -397,7 +443,7 @@ describe('Task Resolver Tests', () => {
 
       const result = await TaskResolvers.Query.pendingTasks(null, {
         userId: testUser.id,
-      });
+      }, { req: mockReq });
       expect(result).toEqual([]);
     });
 
@@ -414,23 +460,29 @@ describe('Task Resolver Tests', () => {
 
       const result = await TaskResolvers.Query.pendingTasks(null, {
         userId: testUser.id,
-      });
+      }, { req: mockReq });
 
       expect(result[0].course).toBeDefined();
       expect(result[0].user).toBeDefined();
     });
+
+    test('should throw error when not authenticated', async () => {
+      const unauthReq = createMockReq(null);
+      await expect(
+        TaskResolvers.Query.pendingTasks(null, { userId: testUser.id }, { req: unauthReq })
+      ).rejects.toThrow('Not authenticated');
+    });
   });
 
   describe('Mutation: createTask', () => {
-    test('should create a new task with all fields', async () => {
+    test('should create a new task with all fields for authenticated user', async () => {
       const deadline = new Date('2025-12-20');
       const result = await TaskResolvers.Mutation.createTask(null, {
         title: 'New Assignment',
         deadline: deadline.toISOString(),
         courseId: testCourse.id,
-        userId: testUser.id,
         completed: false,
-      });
+      }, { req: mockReq });
 
       expect(result).toBeDefined();
       expect(result.title).toBe('New Assignment');
@@ -447,8 +499,7 @@ describe('Task Resolver Tests', () => {
         title: 'Task Without Completion',
         deadline: new Date().toISOString(),
         courseId: testCourse.id,
-        userId: testUser.id,
-      });
+      }, { req: mockReq });
 
       expect(result.completed).toBe(false);
     });
@@ -458,9 +509,8 @@ describe('Task Resolver Tests', () => {
         title: 'Completed Task',
         deadline: new Date().toISOString(),
         courseId: testCourse.id,
-        userId: testUser.id,
         completed: true,
-      });
+      }, { req: mockReq });
 
       expect(result.completed).toBe(true);
     });
@@ -470,8 +520,7 @@ describe('Task Resolver Tests', () => {
         title: 'Test Task',
         deadline: new Date().toISOString(),
         courseId: testCourse.id,
-        userId: testUser.id,
-      });
+      }, { req: mockReq });
 
       expect(result.course.id).toBe(testCourse.id);
       expect(result.course.name).toBe('Computer Science 101');
@@ -485,10 +534,56 @@ describe('Task Resolver Tests', () => {
         title: 'Date Test Task',
         deadline: deadline.toISOString(),
         courseId: testCourse.id,
-        userId: testUser.id,
-      });
+      }, { req: mockReq });
 
       expect(new Date(result.deadline).toISOString()).toBe(deadline.toISOString());
+    });
+
+    test('should throw error when not authenticated', async () => {
+      const unauthReq = createMockReq(null);
+      await expect(
+        TaskResolvers.Mutation.createTask(null, {
+          title: 'New Task',
+          deadline: new Date().toISOString(),
+          courseId: testCourse.id,
+        }, { req: unauthReq })
+      ).rejects.toThrow('Not authenticated');
+    });
+
+    test('should throw error when course not found', async () => {
+      await expect(
+        TaskResolvers.Mutation.createTask(null, {
+          title: 'New Task',
+          deadline: new Date().toISOString(),
+          courseId: 99999,
+        }, { req: mockReq })
+      ).rejects.toThrow('Course not found');
+    });
+
+    test('should throw error when user does not own the course', async () => {
+      const anotherUser = await prisma.user.create({
+        data: {
+          firstName: 'Bob',
+          lastName: 'Johnson',
+          email: 'bob@example.com',
+          password: 'password123',
+        },
+      });
+
+      const anotherCourse = await prisma.course.create({
+        data: {
+          name: 'Bob Course',
+          userId: anotherUser.id,
+        },
+      });
+
+      await expect(
+        TaskResolvers.Mutation.createTask(null, {
+          title: 'New Task',
+          deadline: new Date().toISOString(),
+          courseId: anotherCourse.id,
+        }, { req: mockReq })
+      ).rejects.toThrow('Not authorized');
     });
   });
 
@@ -507,11 +602,11 @@ describe('Task Resolver Tests', () => {
       });
     });
 
-    test('should update task title', async () => {
+    test('should update task title when owner', async () => {
       const result = await TaskResolvers.Mutation.updateTask(null, {
         id: task.id,
         title: 'Updated Title',
-      });
+      }, { req: mockReq });
 
       expect(result.title).toBe('Updated Title');
       expect(result.id).toBe(task.id);
@@ -522,7 +617,7 @@ describe('Task Resolver Tests', () => {
       const result = await TaskResolvers.Mutation.updateTask(null, {
         id: task.id,
         deadline: newDeadline.toISOString(),
-      });
+      }, { req: mockReq });
 
       expect(new Date(result.deadline).toISOString()).toBe(newDeadline.toISOString());
     });
@@ -531,7 +626,7 @@ describe('Task Resolver Tests', () => {
       const result = await TaskResolvers.Mutation.updateTask(null, {
         id: task.id,
         completed: true,
-      });
+      }, { req: mockReq });
 
       expect(result.completed).toBe(true);
     });
@@ -543,7 +638,7 @@ describe('Task Resolver Tests', () => {
         title: 'New Title',
         deadline: newDeadline.toISOString(),
         completed: true,
-      });
+      }, { req: mockReq });
 
       expect(result.title).toBe('New Title');
       expect(new Date(result.deadline).toISOString()).toBe(newDeadline.toISOString());
@@ -555,7 +650,7 @@ describe('Task Resolver Tests', () => {
       const result = await TaskResolvers.Mutation.updateTask(null, {
         id: task.id,
         title: 'Only Title Updated',
-      });
+      }, { req: mockReq });
 
       expect(result.title).toBe('Only Title Updated');
       expect(result.deadline.toISOString()).toBe(originalDeadline.toISOString());
@@ -566,15 +661,61 @@ describe('Task Resolver Tests', () => {
       const result = await TaskResolvers.Mutation.updateTask(null, {
         id: task.id,
         title: 'Updated',
-      });
+      }, { req: mockReq });
 
       expect(result.course).toBeDefined();
       expect(result.user).toBeDefined();
     });
+
+    test('should throw error when not authenticated', async () => {
+      const unauthReq = createMockReq(null);
+      await expect(
+        TaskResolvers.Mutation.updateTask(null, {
+          id: task.id,
+          title: 'Updated',
+        }, { req: unauthReq })
+      ).rejects.toThrow('Not authenticated');
+    });
+
+    test('should throw error when task not found', async () => {
+      await expect(
+        TaskResolvers.Mutation.updateTask(null, {
+          id: 99999,
+          title: 'Updated',
+        }, { req: mockReq })
+      ).rejects.toThrow('Task not found');
+    });
+
+    test('should throw error when user does not own the task', async () => {
+      const anotherUser = await prisma.user.create({
+        data: {
+          firstName: 'Bob',
+          lastName: 'Johnson',
+          email: 'bob@example.com',
+          password: 'password123',
+        },
+      });
+
+      const anotherTask = await prisma.task.create({
+        data: {
+          title: 'Bob Task',
+          deadline: new Date(),
+          courseId: testCourse.id,
+          userId: anotherUser.id,
+        },
+      });
+
+      await expect(
+        TaskResolvers.Mutation.updateTask(null, {
+          id: anotherTask.id,
+          title: 'Hacked',
+        }, { req: mockReq })
+      ).rejects.toThrow('Not authorized');
+    });
   });
 
   describe('Mutation: toggleTaskCompletion', () => {
-    test('should toggle task from incomplete to complete', async () => {
+    test('should toggle task from incomplete to complete when owner', async () => {
       const task = await prisma.task.create({
         data: {
           title: 'Toggle Test',
@@ -587,7 +728,7 @@ describe('Task Resolver Tests', () => {
 
       const result = await TaskResolvers.Mutation.toggleTaskCompletion(null, {
         id: task.id,
-      });
+      }, { req: mockReq });
 
       expect(result.completed).toBe(true);
       expect(result.id).toBe(task.id);
@@ -606,7 +747,7 @@ describe('Task Resolver Tests', () => {
 
       const result = await TaskResolvers.Mutation.toggleTaskCompletion(null, {
         id: task.id,
-      });
+      }, { req: mockReq });
 
       expect(result.completed).toBe(false);
     });
@@ -624,17 +765,17 @@ describe('Task Resolver Tests', () => {
 
       let result = await TaskResolvers.Mutation.toggleTaskCompletion(null, {
         id: task.id,
-      });
+      }, { req: mockReq });
       expect(result.completed).toBe(true);
 
       result = await TaskResolvers.Mutation.toggleTaskCompletion(null, {
         id: task.id,
-      });
+      }, { req: mockReq });
       expect(result.completed).toBe(false);
 
       result = await TaskResolvers.Mutation.toggleTaskCompletion(null, {
         id: task.id,
-      });
+      }, { req: mockReq });
       expect(result.completed).toBe(true);
     });
 
@@ -651,15 +792,63 @@ describe('Task Resolver Tests', () => {
 
       const result = await TaskResolvers.Mutation.toggleTaskCompletion(null, {
         id: task.id,
-      });
+      }, { req: mockReq });
 
       expect(result.course).toBeDefined();
       expect(result.user).toBeDefined();
     });
+
+    test('should throw error when not authenticated', async () => {
+      const task = await prisma.task.create({
+        data: {
+          title: 'Toggle Test',
+          deadline: new Date(),
+          courseId: testCourse.id,
+          userId: testUser.id,
+          completed: false,
+        },
+      });
+
+      const unauthReq = createMockReq(null);
+      await expect(
+        TaskResolvers.Mutation.toggleTaskCompletion(null, { id: task.id }, { req: unauthReq })
+      ).rejects.toThrow('Not authenticated');
+    });
+
+    test('should throw error when task not found', async () => {
+      await expect(
+        TaskResolvers.Mutation.toggleTaskCompletion(null, { id: 99999 }, { req: mockReq })
+      ).rejects.toThrow('Task not found');
+    });
+
+    test('should throw error when user does not own the task', async () => {
+      const anotherUser = await prisma.user.create({
+        data: {
+          firstName: 'Bob',
+          lastName: 'Johnson',
+          email: 'bob@example.com',
+          password: 'password123',
+        },
+      });
+
+      const anotherTask = await prisma.task.create({
+        data: {
+          title: 'Bob Task',
+          deadline: new Date(),
+          courseId: testCourse.id,
+          userId: anotherUser.id,
+          completed: false,
+        },
+      });
+
+      await expect(
+        TaskResolvers.Mutation.toggleTaskCompletion(null, { id: anotherTask.id }, { req: mockReq })
+      ).rejects.toThrow('Not authorized');
+    });
   });
 
   describe('Mutation: deleteTask', () => {
-    test('should delete a task', async () => {
+    test('should delete a task when owner', async () => {
       const task = await prisma.task.create({
         data: {
           title: 'Task to Delete',
@@ -671,7 +860,7 @@ describe('Task Resolver Tests', () => {
 
       const result = await TaskResolvers.Mutation.deleteTask(null, {
         id: task.id,
-      });
+      }, { req: mockReq });
 
       expect(result.id).toBe(task.id);
       expect(result.title).toBe('Task to Delete');
@@ -694,16 +883,56 @@ describe('Task Resolver Tests', () => {
 
       const result = await TaskResolvers.Mutation.deleteTask(null, {
         id: task.id,
-      });
+      }, { req: mockReq });
 
       expect(result.course).toBeDefined();
       expect(result.user).toBeDefined();
     });
 
-    test('should throw error when deleting non-existent task', async () => {
+    test('should throw error when not authenticated', async () => {
+      const task = await prisma.task.create({
+        data: {
+          title: 'Task to Delete',
+          deadline: new Date(),
+          courseId: testCourse.id,
+          userId: testUser.id,
+        },
+      });
+
+      const unauthReq = createMockReq(null);
       await expect(
-        TaskResolvers.Mutation.deleteTask(null, { id: 99999 })
-      ).rejects.toThrow();
+        TaskResolvers.Mutation.deleteTask(null, { id: task.id }, { req: unauthReq })
+      ).rejects.toThrow('Not authenticated');
+    });
+
+    test('should throw error when task not found', async () => {
+      await expect(
+        TaskResolvers.Mutation.deleteTask(null, { id: 99999 }, { req: mockReq })
+      ).rejects.toThrow('Task not found');
+    });
+
+    test('should throw error when user does not own the task', async () => {
+      const anotherUser = await prisma.user.create({
+        data: {
+          firstName: 'Bob',
+          lastName: 'Johnson',
+          email: 'bob@example.com',
+          password: 'password123',
+        },
+      });
+
+      const anotherTask = await prisma.task.create({
+        data: {
+          title: 'Bob Task',
+          deadline: new Date(),
+          courseId: testCourse.id,
+          userId: anotherUser.id,
+        },
+      });
+
+      await expect(
+        TaskResolvers.Mutation.deleteTask(null, { id: anotherTask.id }, { req: mockReq })
+      ).rejects.toThrow('Not authorized');
     });
   });
 

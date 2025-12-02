@@ -42,11 +42,10 @@ export const CourseTypeDefs = gql`
   }
 
   type Mutation {
-    # Create a new course
+    # Create a new course (uses logged-in user's ID)
     createCourse(
       name: String!
       description: String
-      userId: Int!
     ): Course!
     
     # Update a course
