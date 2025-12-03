@@ -2,6 +2,7 @@
 
 import prisma from "../../lib/prisma.js";
 import bcrypt from "bcryptjs";
+import { requireAuth } from "../../utils/auth.js";
 
 
 export const UserResolvers = {
@@ -10,8 +11,9 @@ export const UserResolvers = {
   },
 
   Mutation: {
-    // Create a new user
-    createUser: async (_, { firstName, lastName, email, password }) => {
+    // Create a new user (authenticated users only)
+    createUser: async (_, { firstName, lastName, email, password }, { req }) => {
+      requireAuth(req);
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
       return await prisma.user.create({
@@ -28,13 +30,23 @@ export const UserResolvers = {
       });
     },
 
-    // Update an existing user
-    updateUser: async (_, { id, firstName, lastName, email, password }) => {
+    // Update an existing user (only the user themselves can update)
+    updateUser: async (_, { id, firstName, lastName, email, password }, { req }) => {
+      const userId = requireAuth(req);
+      
+      // Users can only update their own profile
+      if (userId !== id) {
+        throw new Error("Not authorized. You can only update your own profile.");
+      }
+
       const data = {};
       if (firstName !== undefined) data.firstName = firstName;
       if (lastName !== undefined) data.lastName = lastName;
       if (email !== undefined) data.email = email;
-      if (password !== undefined) data.password = password;
+      if (password !== undefined) {
+        const saltRounds = 10;
+        data.password = await bcrypt.hash(password, saltRounds);
+      }
 
       return await prisma.user.update({
         where: { id },
@@ -46,8 +58,15 @@ export const UserResolvers = {
       });
     },
 
-    // Delete a user
-    deleteUser: async (_, { id }) => {
+    // Delete a user (only the user themselves can delete their account)
+    deleteUser: async (_, { id }, { req }) => {
+      const userId = requireAuth(req);
+      
+      // Users can only delete their own account
+      if (userId !== id) {
+        throw new Error("Not authorized. You can only delete your own account.");
+      }
+
       return await prisma.user.delete({
         where: { id },
         include: {
