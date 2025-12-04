@@ -13,7 +13,7 @@ const redisClient = createClient({
 redisClient.on("error", (err) => console.error("Redis Client Error:", err));
 redisClient.on("connect", () => console.log("Redis connected"));
 
-// Connect to Redis (required for redis v4+)
+// Connect to Redis server
 await redisClient.connect();
 
 export const redisSession = session({

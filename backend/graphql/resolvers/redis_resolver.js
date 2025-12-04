@@ -1,7 +1,9 @@
+// this resolver is for redis related operations ... like checking connection status, setting and getting test data
 import redisClient from "../../redis/redisConnection.js";
 
 export const RedisResolvers = {
-  Query: {
+
+  Query: { // is that thing alive ???? 
     redisStatus: async () => {
       try {
         const pong = await redisClient.ping();
@@ -13,7 +15,7 @@ export const RedisResolvers = {
       }
     },
 
-    readRedisTestData: async (_, { key }) => {
+    readRedisTestData: async (_, { key }) => { // lets read a data using a key 
       try {
         const value = await redisClient.get(key);
         return value || `No data found for key: ${key}`;
@@ -24,7 +26,7 @@ export const RedisResolvers = {
   },
 
   Mutation: {
-    setRedisTestData: async (_, { key, value }) => {
+    setRedisTestData: async (_, { key, value }) => { // sets a test data in redis
       try {
         await redisClient.set(key, value);
         return `Data set in Redis: ${key} = ${value}`;

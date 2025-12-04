@@ -1,4 +1,4 @@
-// here apollo server setup gets integrated
+// here apollo server setup gets integrated with all the typeDefs and resolvers
 
 import { ApolloServer } from "apollo-server-express";
 import { ApolloServerPluginLandingPageLocalDefault } from "apollo-server-core";

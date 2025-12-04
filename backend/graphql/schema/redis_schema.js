@@ -1,3 +1,4 @@
+// this is a schema definition file for redis related operations
 import { gql } from "apollo-server-express";
 
 export const RedisTypeDefs = gql`

@@ -10,5 +10,5 @@ export default {
     '!jest.config.js',
   ],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  maxWorkers: 1, // Run tests serially to avoid database conflicts
+  maxWorkers: 1, // Run tests serially to avoid database conflicts ... upon increasing this the test cases fail due to multiple connections which causes deadlocks 
 };
