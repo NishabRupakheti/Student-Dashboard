@@ -88,8 +88,34 @@ backend/
 
 You can find the full list of GraphQL mutations and queries in the `graphql/schema` and `graphql/resolvers` folder as well as in the `server.js` file where the Apollo Server is initialized.
 
+## Testing
 
-### This project has only one author:
+The project uses **Jest** as the testing framework with a dedicated test database to ensure isolated and reliable test.  
+
+### Test Database Setup
+
+- Tests run against a separate PostgreSQL test database (configured via `TEST_DATABASE_URL`)
+- The test database client is a singleton (`lib/testDb.js`) meaning it is shared across all tests to avoid multiple connections
+- Tests run serially (`maxWorkers: 1` in Jest config file) to avoid database conflicts and deadlocks. 
+
+### Test Structure
+
+Test files are located in `backend/__tests__/`:
+- `authentication.test.js` - User registration and login
+- `user_resolver.test.js` - User profile operations
+- `course_resolver.test.js` - Course CRUD operations
+- `task_resolver.test.js` - Task management and filtering
+
+### Test Configuration
+
+- **Environment**: Tests run with `NODE_ENV=test`
+- **Database**: Uses `TEST_DATABASE_URL` from `.env` file
+- **Setup**: `jest.setup.js` configures the test environment
+- **Pattern**: Test files match `**/__tests__/**/*.test.js`
+
+###
+
+# This project has only one author:
 
 ## Author
 **Nishab Rupakheti**
