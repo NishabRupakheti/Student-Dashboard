@@ -15,6 +15,11 @@ const PORT = process.env.PORT || 4000;
 app.use(redisSession);
 
 
+// health check endpoint for Traefik
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 // this is a test route to check if redis session is working (REST endpoint)
 app.get("/redis" , (req, res) => {
    req.session.test = "HOLA MFFFF";

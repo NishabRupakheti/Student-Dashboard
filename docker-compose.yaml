@@ -16,7 +16,7 @@ services:
       - "traefik.http.routers.backend.rule=Host(`backend.local`)"
       - "traefik.http.routers.backend.middlewares=ratelimit@docker"
       - "traefik.http.services.backend.loadbalancer.server.port=4000"
-      - "traefik.http.services.backend.loadbalancer.healthcheck.path=/graphql" 
+      - "traefik.http.services.backend.loadbalancer.healthcheck.path=/health" 
       - "traefik.http.middlewares.ratelimit.ratelimit.average=100"
       - "traefik.http.middlewares.ratelimit.ratelimit.burst=50"
       - "traefik.http.middlewares.ratelimit.ratelimit.period=1s"
