@@ -61,6 +61,17 @@ services:
       - redis_data:/data
     command: ["redis-server", "--appendonly", "yes"]
 
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./frontend:/app
+    env_file:
+      - ./frontend/.env
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      
 volumes:
   db_data:
   redis_data:
