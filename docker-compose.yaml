@@ -67,10 +67,14 @@ services:
       - ./frontend:/app
     env_file:
       - ./frontend/.env
-    ports:
-      - "80:80"
+    expose:
+      - "80"
     depends_on:
       - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`localhost`) || Host(`frontend.local`)"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
       
 volumes:
   db_data:
