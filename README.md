@@ -113,19 +113,3 @@ Test files are located in `backend/__tests__/`:
 - **Setup**: `jest.setup.js` configures the test environment
 - **Pattern**: Test files match `**/__tests__/**/*.test.js`
 
-###
-
-# This project has only one author:
-
-## Author
-**Nishab Rupakheti**
-**AD9025**
-
-
-
-### Time spent 
-I dont exactly remember the time spent but I believe I spent around 25-30 hours on this project. Perhaps less or more. 
-
-
-### Self Assessment - 
-I believe I have met all the requirements or even exceeded them for this project. Some things such as Redis session storage, Traefik reverse proxy with rate limiting, docker compose setup, PostgreSQL db with Prisma ORM were not the part of the course but I implemented those intricacies here. That is because I studied them from other courses and wanted to apply them. I think the project was successful overall and I am satisfied with it. 
