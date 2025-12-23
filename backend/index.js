@@ -31,7 +31,14 @@ app.get("/redis" , (req, res) => {
 // this will start the apollo server and apply the middleware to express app
 async function startServer() {
   await ApolloServerInstance.start();
-  ApolloServerInstance.applyMiddleware({ app, path: "/graphql" });
+  ApolloServerInstance.applyMiddleware({ 
+    app, 
+    path: "/graphql",
+    cors: {
+      origin: ['http://localhost', 'http://localhost:80', 'http://frontend.local'],
+      credentials: true
+    }
+  });
 
   app.listen(PORT, () => {
     console.log(`Server is running at http://localhost:${PORT}/graphql`);

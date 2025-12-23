@@ -1,18 +1,43 @@
-import React, { useState } from 'react'
+import React, { useState } from "react";
+import { useMutation } from "@apollo/client/react";
+import { LOGIN_MUTATION } from "../graphql/mutations/auth";
 
 const Login = () => {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [login, { loading }] = useMutation(LOGIN_MUTATION);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log({ email, password })
-  }
+    e.preventDefault();
+    setError("");
+
+    login({ variables: { email, password } })
+      .then((response) => {
+        console.log("Login successful:", response.data.login);
+        // Session is now stored on the backend
+        // Redirect or refresh to show authenticated state
+        window.location.reload();
+      })
+      .catch((error) => {
+        console.error("Login error:", error);
+        setError(error.message || "Login failed. Please try again.");
+      });
+  };
 
   return (
+    // login form
     <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="email"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Email
         </label>
         <input
@@ -25,7 +50,10 @@ const Login = () => {
         />
       </div>
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="password"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Password
         </label>
         <input
@@ -39,12 +67,13 @@ const Login = () => {
       </div>
       <button
         type="submit"
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium"
+        disabled={loading}
+        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
       >
-        Login
+        {loading ? "Logging in..." : "Login"}
       </button>
     </form>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;

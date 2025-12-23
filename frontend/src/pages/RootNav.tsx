@@ -3,8 +3,8 @@ import { Outlet, NavLink } from 'react-router'
 
 const RootNav = () => {
   return (
+    // this gives out navigation for the main app pages and an outlet for rendering the child routes
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation Bar */}
       <nav className="bg-white shadow-md">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
@@ -43,8 +43,7 @@ const RootNav = () => {
           </div>
         </div>
       </nav>
-
-      {/* Page Content */}
+      {/* Outlet for rendering child routes like Home and Course */}
       <main className="container mx-auto px-4 py-8">
         <Outlet />
       </main>
