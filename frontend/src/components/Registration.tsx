@@ -1,20 +1,54 @@
-import React, { useState } from 'react'
+import React, { useState } from "react";
+import { useMutation } from "@apollo/client/react";
+import { REGISTER_MUTATION } from "../graphql/mutations/auth";
+import { useNavigate } from 'react-router';
+
 
 const Registration = () => {
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [Register, { loading }] = useMutation(REGISTER_MUTATION);
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log({ firstName, lastName, email, password })
-  }
+    e.preventDefault();
+    setError("");
+    console.log({ firstName, lastName, email, password });
+
+    Register({
+      variables: { firstName, lastName, email, password },
+    })
+      .then((response) => {
+        console.log("Registration successful:", response.data.createUser);
+        // Clear form
+        setEmail('');
+        setPassword('');
+        setFirstName('');
+        setLastName('');
+        // Navigate to auth page (login)
+        navigate('/');
+      })
+      .catch((error) => {
+        console.error("Registration error:", error);
+        setError(error.message || "Registration failed. Please try again.");
+      });
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
       <div>
-        <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="firstName"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           First Name
         </label>
         <input
@@ -27,7 +61,10 @@ const Registration = () => {
         />
       </div>
       <div>
-        <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="lastName"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Last Name
         </label>
         <input
@@ -40,7 +77,10 @@ const Registration = () => {
         />
       </div>
       <div>
-        <label htmlFor="reg-email" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="reg-email"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Email
         </label>
         <input
@@ -53,7 +93,10 @@ const Registration = () => {
         />
       </div>
       <div>
-        <label htmlFor="reg-password" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="reg-password"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Password
         </label>
         <input
@@ -67,12 +110,13 @@ const Registration = () => {
       </div>
       <button
         type="submit"
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium"
+        disabled={loading}
+        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
       >
-        Register
+        {loading ? "Registering..." : "Register"}
       </button>
     </form>
-  )
-}
+  );
+};
 
-export default Registration
+export default Registration;

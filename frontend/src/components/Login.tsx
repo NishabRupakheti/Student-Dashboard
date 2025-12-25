@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { useMutation } from "@apollo/client/react";
 import { LOGIN_MUTATION } from "../graphql/mutations/auth";
+import { useNavigate } from 'react-router';
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [login, { loading }] = useMutation(LOGIN_MUTATION);
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,9 +17,8 @@ const Login = () => {
     login({ variables: { email, password } })
       .then((response) => {
         console.log("Login successful:", response.data.login);
-        // Session is now stored on the backend
-        // Redirect or refresh to show authenticated state
-        window.location.reload();
+        // You can redirect or update UI after successful login here
+        navigate('/');
       })
       .catch((error) => {
         console.error("Login error:", error);

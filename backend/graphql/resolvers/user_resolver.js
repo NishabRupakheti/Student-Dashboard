@@ -11,9 +11,8 @@ export const UserResolvers = {
   },
 
   Mutation: {
-    // Create a new user (authenticated users only)
-    createUser: async (_, { firstName, lastName, email, password }, { req }) => {
-      requireAuth(req);
+    // Create a new user (public - no auth required)
+    createUser: async (_, { firstName, lastName, email, password }) => {
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
       return await prisma.user.create({

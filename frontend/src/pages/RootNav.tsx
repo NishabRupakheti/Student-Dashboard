@@ -1,7 +1,26 @@
 import React from 'react'
-import { Outlet, NavLink } from 'react-router'
+import { Outlet, NavLink, useNavigate } from 'react-router'
+import { useMutation } from '@apollo/client/react'
+import { LOGOUT_MUTATION } from '../graphql/mutations/auth'
 
 const RootNav = () => {
+  const navigate = useNavigate();
+  const [logout] = useMutation(LOGOUT_MUTATION);
+
+  const handleLogout = () => {
+    if (window.confirm('Are you sure you want to logout?')) {
+      logout()
+        .then((response) => {
+          console.log('Logout successful:', response.data.logout);
+          // Redirect to auth page
+          navigate('/auth');
+        })
+        .catch((error) => {
+          console.error('Logout error:', error);
+        });
+    }
+  };
+
   return (
     // this gives out navigation for the main app pages and an outlet for rendering the child routes
     <div className="min-h-screen bg-gray-50">
@@ -39,6 +58,15 @@ const RootNav = () => {
                   Courses
                 </NavLink>
               </div>
+            </div>
+            
+            <div>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors font-medium"
+              >
+                Logout
+              </button>
             </div>
           </div>
         </div>

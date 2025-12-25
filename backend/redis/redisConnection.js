@@ -22,10 +22,11 @@ export const redisSession = session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    httpOnly: true,
-    secure: false, // Set to true in production with HTTPS
-    sameSite: "none", // Allow cross-origin requests (needed for Apollo Sandbox)
+    httpOnly: false, // Temporarily false for debugging
+    secure: false,
+    sameSite: "lax",
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    path: '/',
   },
 });
 
