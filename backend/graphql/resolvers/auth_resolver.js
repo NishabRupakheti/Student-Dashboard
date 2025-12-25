@@ -1,6 +1,7 @@
 // this will handle all auth related graphql requests
 import prisma from "../../lib/prisma.js";
 import bcrypt from "bcryptjs";
+import redisClient from "../../redis/redisConnection.js";
 
 export const AuthResolvers = {
   Query: {
@@ -110,13 +111,39 @@ export const AuthResolvers = {
       }
     },
 
-    logout: async (_, __, { req }) => {
+    logout: async (_, __, { req, res }) => {
+      if (!req.session || !req.sessionID) {
+        throw new Error("No active session to logout");
+      }
+
+      const sessionID = req.sessionID;
+
       return new Promise((resolve, reject) => {
-        req.session.destroy((err) => {
+        // Destroy the session
+        req.session.destroy(async (err) => {
           if (err) {
+            console.error("Session destroy error:", err);
             reject(new Error("Failed to logout"));
+            return;
           }
-          resolve("Logout successful");
+
+          try {
+            // Manually delete from Redis to ensure cleanup
+            await redisClient.del(`sess:${sessionID}`);
+            
+            // Clear the session cookie
+            res.clearCookie("connect.sid", {
+              path: '/',
+              httpOnly: false,
+              secure: false,
+              sameSite: "lax"
+            });
+            
+            resolve("Logout successful");
+          } catch (redisErr) {
+            console.error("Redis delete error:", redisErr);
+            reject(new Error("Failed to clear session from Redis"));
+          }
         });
       });
     },
