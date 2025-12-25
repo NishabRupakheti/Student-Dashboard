@@ -13,7 +13,8 @@ services:
       - test-db
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`backend.local`)"
+      - "traefik.http.routers.backend.rule=Host(`localhost`) && PathPrefix(`/graphql`)"
+      - "traefik.http.routers.backend.priority=2"
       - "traefik.http.routers.backend.middlewares=ratelimit@docker"
       - "traefik.http.services.backend.loadbalancer.server.port=4000"
       - "traefik.http.services.backend.loadbalancer.healthcheck.path=/health" 
@@ -25,8 +26,10 @@ services:
 
   db:
     image: postgres:17
-    env_file:
-      - ./backend/.env
+    environment:
+      POSTGRES_USER: General
+      POSTGRES_PASSWORD: root666
+      POSTGRES_DB: CoreDB
     volumes:
       - db_data:/var/lib/postgresql/data
     ports:
@@ -73,7 +76,8 @@ services:
       - backend
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`localhost`) || Host(`frontend.local`)"
+      - "traefik.http.routers.frontend.rule=Host(`localhost`)"
+      - "traefik.http.routers.frontend.priority=1"
       - "traefik.http.services.frontend.loadbalancer.server.port=5173"
       
 volumes:

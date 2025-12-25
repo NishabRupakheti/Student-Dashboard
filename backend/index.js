@@ -35,7 +35,7 @@ async function startServer() {
     app, 
     path: "/graphql",
     cors: {
-      origin: ['http://localhost', 'http://localhost:80', 'http://frontend.local'],
+      origin: 'http://localhost',
       credentials: true
     }
   });
