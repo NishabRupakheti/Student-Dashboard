@@ -14,20 +14,6 @@ const PORT = process.env.PORT || 4000;
 // use the redis session middleware
 app.use(redisSession);
 
-
-// health check endpoint for Traefik
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok" });
-});
-
-// this is a test route to check if redis session is working (REST endpoint)
-app.get("/redis" , (req, res) => {
-   req.session.test = "HOLA MFFFF";
-   res.json({ message: "Session set in Redis", session: req.session });
-});
-
-
-
 // this will start the apollo server and apply the middleware to express app
 async function startServer() {
   await ApolloServerInstance.start();
