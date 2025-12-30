@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useMutation } from "@apollo/client/react";
 import { REGISTER_MUTATION } from "../graphql/mutations/auth";
-import { useNavigate } from 'react-router';
-
+import { useNavigate } from "react-router";
 
 const Registration = () => {
   const [firstName, setFirstName] = useState("");
@@ -22,14 +21,9 @@ const Registration = () => {
       variables: { firstName, lastName, email, password },
     })
       .then((response) => {
-        console.log("Registration successful:", response.data.createUser);
         // Clear form
-        setEmail('');
-        setPassword('');
-        setFirstName('');
-        setLastName('');
-        // Navigate to auth page (login)
-        navigate('/');
+        window.location.reload();
+        console.alert("Done! You can now log in.");
       })
       .catch((error) => {
         console.error("Registration error:", error);

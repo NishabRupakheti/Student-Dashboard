@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router";
 import AuthNav from "./components/AuthNav";
 import Home from "./pages/Home";
 import Course from "./pages/Course";
+import CourseDetail from "./pages/CourseDetail";
 import RootNav from "./pages/RootNav";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -22,6 +23,7 @@ function App() {
         > {/* On the / path, render the RootNav component (protected) */}
           <Route index element={<Home />} />  
           <Route path="course" element={<Course />} />
+          <Route path="course/:courseId" element={<CourseDetail />} />
         </Route>
       </Routes>
     </BrowserRouter>

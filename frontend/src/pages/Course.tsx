@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import { useQuery, useMutation } from '@apollo/client/react';
 import { GET_COURSES } from '../graphql/queries/course';
 import { CREATE_COURSE, DELETE_COURSE } from '../graphql/mutations/course';
@@ -17,6 +18,7 @@ interface Course {
 }
 
 const Course = () => {
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', description: '' });
 
@@ -170,7 +172,10 @@ const Course = () => {
                       <span className="text-xs text-gray-500">
                         {new Date(course.createdAt).toLocaleDateString()}
                       </span>
-                      <button className="text-blue-600 hover:text-blue-800 font-semibold text-sm">
+                      <button
+                        onClick={() => navigate(`/course/${course.id}`)}
+                        className="text-blue-600 hover:text-blue-800 font-semibold text-sm"
+                      >
                         View Details →
                       </button>
                     </div>
