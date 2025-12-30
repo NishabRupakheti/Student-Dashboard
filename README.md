@@ -1,8 +1,8 @@
 # Student Dashboard Backend
 
-## What is the project about?
+## What is this about?
 
-This is the backend API for a student dashboard application. It allows students to manage their courses and track assignments/tasks that are due on certain dates. The API handles user authentication, course management, and the tracking of tasks via features such as marking them as completed, filtering by status, and more.
+This is the full stack application for a student dashboard application. It allows students to manage their courses and track assignments/tasks that are due on certain dates. The API handles user authentication, course management, and the tracking of tasks via features such as marking them as completed, filtering by status, and more.
 User Management: registration, login, and profile management of users is enabled through secure session-based authentication.
 
 ## What is this used for?
@@ -13,7 +13,7 @@ User Management: registration, login, and profile management of users is enabled
 - **Authorization**: Each user can only modify his/her own courses and tasks 
 
 
-## Technical Stack
+## Technical Stack (Backend)
 
 | Layer | Technology | Purpose |
 |-------|------------|---------|
