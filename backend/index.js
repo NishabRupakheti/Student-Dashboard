@@ -11,6 +11,11 @@ import { redisSession } from "./redis/redisConnection.js";
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// Health check endpoint for traefik
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 // use the redis session middleware
 app.use(redisSession);
 

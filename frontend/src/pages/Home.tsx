@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client/react';
 import { GET_COURSES } from '../graphql/queries/course';
 import { GET_TASKS } from '../graphql/queries/task';
-import { TOGGLE_TASK_COMPLETION } from '../graphql/mutations/task';
+import { TOGGLE_TASK_COMPLETION, CREATE_TASK } from '../graphql/mutations/task';
+import { CREATE_COURSE } from '../graphql/mutations/course';
 import { ME_QUERY } from '../graphql/queries/me';
 
 interface Task {
@@ -33,10 +34,22 @@ interface User {
 
 //this is home page
 const Home = () => {
+  const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [courseFormData, setCourseFormData] = useState({ name: '', description: '' });
+  const [taskFormData, setTaskFormData] = useState({ title: '', deadline: '', courseId: '' });
+
   const { data: userData } = useQuery<{ me: User }>(ME_QUERY);
   const { data: coursesData, loading: coursesLoading } = useQuery<{ courses: Course[] }>(GET_COURSES);
   const { data: tasksData, loading: tasksLoading } = useQuery<{ tasks: Task[] }>(GET_TASKS);
+  
   const [toggleTask] = useMutation(TOGGLE_TASK_COMPLETION, {
+    refetchQueries: [{ query: GET_TASKS }, { query: GET_COURSES }],
+  });
+  const [createCourse] = useMutation(CREATE_COURSE, {
+    refetchQueries: [{ query: GET_COURSES }],
+  });
+  const [createTask] = useMutation(CREATE_TASK, {
     refetchQueries: [{ query: GET_TASKS }, { query: GET_COURSES }],
   });
 
@@ -56,6 +69,40 @@ const Home = () => {
     .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
     .slice(0, 7);
 
+
+  const handleCreateCourse = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await createCourse({
+        variables: {
+          name: courseFormData.name,
+          description: courseFormData.description || null,
+        },
+      });
+      setCourseFormData({ name: '', description: '' });
+      setIsCourseModalOpen(false);
+    } catch (err) {
+      console.error('Error creating course:', err);
+    }
+  };
+
+  const handleCreateTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await createTask({
+        variables: {
+          title: taskFormData.title,
+          deadline: taskFormData.deadline,
+          courseId: parseInt(taskFormData.courseId),
+          completed: false,
+        },
+      });
+      setTaskFormData({ title: '', deadline: '', courseId: '' });
+      setIsTaskModalOpen(false);
+    } catch (err) {
+      console.error('Error creating task:', err);
+    }
+  };
   // Get recent courses (last 4)
   const recentCourses = [...courses]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -282,19 +329,211 @@ const Home = () => {
 
         {/* Quick Actions */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <button className="bg-blue-600 hover:bg-blue-700 text-white p-6 rounded-xl shadow-md font-semibold text-lg transition duration-200 flex items-center justify-center gap-2">
+          <button
+            onClick={() => setIsCourseModalOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white p-6 rounded-xl shadow-md font-semibold text-lg transition duration-200 flex items-center justify-center gap-2"
+          >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
             Create New Course
           </button>
-          <button className="bg-purple-600 hover:bg-purple-700 text-white p-6 rounded-xl shadow-md font-semibold text-lg transition duration-200 flex items-center justify-center gap-2">
+          <button
+            onClick={() => setIsTaskModalOpen(true)}
+            className="bg-purple-600 hover:bg-purple-700 text-white p-6 rounded-xl shadow-md font-semibold text-lg transition duration-200 flex items-center justify-center gap-2"
+          >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
             Add New Task
           </button>
         </div>
+
+        {/* Create Course Modal */}
+        {isCourseModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Create New Course</h2>
+                <button
+                  onClick={() => {
+                    setIsCourseModalOpen(false);
+                    setCourseFormData({ name: '', description: '' });
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateCourse}>
+                <div className="mb-4">
+                  <label htmlFor="courseName" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Course Name *
+                  </label>
+                  <input
+                    type="text"
+                    id="courseName"
+                    required
+                    value={courseFormData.name}
+                    onChange={(e) => setCourseFormData({ ...courseFormData, name: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="e.g., Introduction to React"
+                  />
+                </div>
+
+                <div className="mb-6">
+                  <label htmlFor="courseDescription" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Description (Optional)
+                  </label>
+                  <textarea
+                    id="courseDescription"
+                    value={courseFormData.description}
+                    onChange={(e) => setCourseFormData({ ...courseFormData, description: e.target.value })}
+                    rows={4}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Brief description of the course..."
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCourseModalOpen(false);
+                      setCourseFormData({ name: '', description: '' });
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-semibold"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold"
+                  >
+                    Create Course
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Create Task Modal */}
+        {isTaskModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Add New Task</h2>
+                <button
+                  onClick={() => {
+                    setIsTaskModalOpen(false);
+                    setTaskFormData({ title: '', deadline: '', courseId: '' });
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateTask}>
+                <div className="mb-4">
+                  <label htmlFor="taskTitle" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Task Title *
+                  </label>
+                  <input
+                    type="text"
+                    id="taskTitle"
+                    required
+                    value={taskFormData.title}
+                    onChange={(e) => setTaskFormData({ ...taskFormData, title: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="e.g., Complete Chapter 3 homework"
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label htmlFor="taskCourse" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Course *
+                  </label>
+                  <select
+                    id="taskCourse"
+                    required
+                    value={taskFormData.courseId}
+                    onChange={(e) => setTaskFormData({ ...taskFormData, courseId: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  >
+                    <option value="">Select a course</option>
+                    {courses.map((course) => (
+                      <option key={course.id} value={course.id}>
+                        {course.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="mb-6">
+                  <label htmlFor="taskDeadline" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Deadline *
+                  </label>
+                  <input
+                    type="datetime-local"
+                    id="taskDeadline"
+                    required
+                    value={taskFormData.deadline}
+                    onChange={(e) => setTaskFormData({ ...taskFormData, deadline: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsTaskModalOpen(false);
+                      setTaskFormData({ title: '', deadline: '', courseId: '' });
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-semibold"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold"
+                  >
+                    Add Task
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
