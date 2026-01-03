@@ -4,7 +4,7 @@ import { useQuery, useMutation } from '@apollo/client/react';
 import { GET_COURSE } from '../graphql/queries/course';
 import { GET_COURSES } from '../graphql/queries/course';
 import { GET_TASKS } from '../graphql/queries/task';
-import { CREATE_TASK, UPDATE_TASK, DELETE_TASK, TOGGLE_TASK_COMPLETION } from '../graphql/mutations/task';
+import { CREATE_TASK, DELETE_TASK, TOGGLE_TASK_COMPLETION } from '../graphql/mutations/task';
 
 interface Task {
   id: number;

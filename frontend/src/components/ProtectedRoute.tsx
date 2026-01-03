@@ -6,9 +6,16 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
+interface MeData {
+  me: {
+    firstName: string;
+    email: string;
+  };
+}
+
 // Component to protect routes from unauthorized access
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { data, loading, error } = useQuery(ME_QUERY);
+  const { data, loading, error } = useQuery<MeData>(ME_QUERY);
 
   // Show loading state while checking authentication
   if (loading) {

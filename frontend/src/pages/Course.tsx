@@ -22,7 +22,7 @@ const Course = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', description: '' });
 
-  const { loading, error, data, refetch } = useQuery<{ courses: Course[] }>(GET_COURSES);
+  const { loading, error, data } = useQuery<{ courses: Course[] }>(GET_COURSES);
   const [createCourse] = useMutation(CREATE_COURSE, {
     refetchQueries: [{ query: GET_COURSES }],
   });

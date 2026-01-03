@@ -1,17 +1,20 @@
-import React from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router'
 import { useMutation } from '@apollo/client/react'
 import { LOGOUT_MUTATION } from '../graphql/mutations/auth'
 
+interface LogoutResponse {
+  logout: string;
+}
+
 const RootNav = () => {
   const navigate = useNavigate();
-  const [logout] = useMutation(LOGOUT_MUTATION);
+  const [logout] = useMutation<LogoutResponse>(LOGOUT_MUTATION);
 
   const handleLogout = () => {
     if (window.confirm('Are you sure you want to logout?')) {
       logout()
         .then((response) => {
-          console.log('Logout successful:', response.data.logout);
+          console.log('Logout successful:', response.data?.logout);
           // Redirect to auth page
           navigate('/auth');
         })

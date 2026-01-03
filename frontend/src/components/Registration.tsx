@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useMutation } from "@apollo/client/react";
 import { REGISTER_MUTATION } from "../graphql/mutations/auth";
-import { useNavigate } from "react-router";
 
 const Registration = () => {
   const [firstName, setFirstName] = useState("");
@@ -10,7 +9,6 @@ const Registration = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [Register, { loading }] = useMutation(REGISTER_MUTATION);
-  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,10 +18,10 @@ const Registration = () => {
     Register({
       variables: { firstName, lastName, email, password },
     })
-      .then((response) => {
+      .then(() => {
         // Clear form
         window.location.reload();
-        console.alert("Done! You can now log in.");
+        alert("Done! You can now log in.");
       })
       .catch((error) => {
         console.error("Registration error:", error);

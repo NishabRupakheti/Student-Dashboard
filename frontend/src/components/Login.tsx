@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useMutation } from "@apollo/client/react";
 import { LOGIN_MUTATION } from "../graphql/mutations/auth";
 import { useNavigate } from 'react-router';
+
+interface LoginResponse {
+  login: string;
+}
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [login, { loading }] = useMutation(LOGIN_MUTATION);
+  const [login, { loading }] = useMutation<LoginResponse>(LOGIN_MUTATION);
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -16,7 +20,7 @@ const Login = () => {
 
     login({ variables: { email, password } })
       .then((response) => {
-        console.log("Login successful:", response.data.login);
+        console.log("Login successful:", response.data?.login);
         // You can redirect or update UI after successful login here
         navigate('/');
       })
