@@ -3,16 +3,22 @@ services:
     build: ./backend
     env_file:
       - ./backend/.env
+    expose:
+      - "4000"
     depends_on:
       - db
       - redis
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`yourdomain.com`) && PathPrefix(`/graphql`)"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/graphql`)"
       - "traefik.http.routers.backend.priority=10"
-      - "traefik.http.routers.backend.middlewares=ratelimit@docker"
+      - "traefik.http.routers.backend.middlewares=cors-headers@docker,ratelimit@docker"
       - "traefik.http.services.backend.loadbalancer.server.port=4000"
-      - "traefik.http.services.backend.loadbalancer.healthcheck.path=/health" 
+      - "traefik.http.services.backend.loadbalancer.healthcheck.path=/health"
+      - "traefik.http.middlewares.cors-headers.headers.accesscontrolalloworiginlist=https://your-vercel-app.vercel.app"
+      - "traefik.http.middlewares.cors-headers.headers.accesscontrolallowmethods=GET,POST,OPTIONS"
+      - "traefik.http.middlewares.cors-headers.headers.accesscontrolallowheaders=Content-Type,Authorization"
+      - "traefik.http.middlewares.cors-headers.headers.accesscontrolallowcredentials=true"
       - "traefik.http.middlewares.ratelimit.ratelimit.average=100"
       - "traefik.http.middlewares.ratelimit.ratelimit.burst=50"
       - "traefik.http.middlewares.ratelimit.ratelimit.period=1s"
@@ -23,8 +29,8 @@ services:
   db:
     image: postgres:17
     environment:
-      POSTGRES_USER: General
-      POSTGRES_PASSWORD: root666
+      POSTGRES_USER: produser
+      POSTGRES_PASSWORD: Pr0d_S3cur3_P@ssw0rd_2026!
       POSTGRES_DB: CoreDB
     volumes:
       - db_data:/var/lib/postgresql/data
