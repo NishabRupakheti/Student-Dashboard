@@ -46,7 +46,7 @@ services:
     restart: always
 
   traefik:
-    image: traefik:v3.3
+    image: traefik:v2.11
     command:
       - "--providers.docker=true"
       - "--providers.docker.endpoint=unix:///var/run/docker.sock"
