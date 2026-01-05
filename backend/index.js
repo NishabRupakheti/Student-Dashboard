@@ -26,7 +26,11 @@ async function startServer() {
     app, 
     path: "/graphql",
     cors: {
-      origin: 'http://localhost',
+      origin: [
+        'http://localhost',
+        'http://localhost:5173',
+        'https://student-dashboard-eight-mauve.vercel.app'
+      ],
       credentials: true
     }
   });
