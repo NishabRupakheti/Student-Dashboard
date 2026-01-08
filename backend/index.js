@@ -11,6 +11,9 @@ import { redisSession } from "./redis/redisConnection.js";
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// Trust proxy - required when behind Traefik/nginx for secure cookies
+app.set('trust proxy', 1);
+
 // Health check endpoint for traefik
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
