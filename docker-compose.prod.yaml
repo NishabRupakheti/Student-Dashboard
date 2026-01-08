@@ -2,7 +2,7 @@ services:
   backend:
     build: ./backend
     env_file:
-      - ./backend/.env
+      - ./backend/.env.production
     expose:
       - "4000"
     depends_on:

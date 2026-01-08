@@ -22,9 +22,9 @@ export const redisSession = session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    httpOnly: false, // Temporarily false for debugging
-    secure: false,
-    sameSite: "lax",
+    httpOnly: true, // Security: prevents JavaScript access to cookies
+    secure: process.env.NODE_ENV === 'production', // true in production (HTTPS required)
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' required for cross-origin in production
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     path: '/',
   },

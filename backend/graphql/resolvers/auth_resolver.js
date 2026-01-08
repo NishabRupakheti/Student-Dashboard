@@ -134,9 +134,9 @@ export const AuthResolvers = {
             // Clear the session cookie
             res.clearCookie("connect.sid", {
               path: '/',
-              httpOnly: false,
-              secure: false,
-              sameSite: "lax"
+              httpOnly: true,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: process.env.NODE_ENV === 'production' ? "none" : "lax"
             });
             
             resolve("Logout successful");
